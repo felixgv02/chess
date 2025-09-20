@@ -84,7 +84,7 @@ public class ChessPiece {
         }
         return new ArrayList<>();
     }
-
+    //Comment to know the error I corrected
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
