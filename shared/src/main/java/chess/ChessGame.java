@@ -34,6 +34,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
+        this.teamTurn = team;
     }
 
     /**
