@@ -96,4 +96,9 @@ public class ChessBoard {
         // Use Arrays.deepHashCode for 2D arrays
         return Arrays.deepHashCode(squares);
     }
+
+    //NEED TO CHANGE LATTER
+    public ChessBoard deepCoopy() {
+        return null;
+    }
 }
