@@ -60,7 +60,7 @@ public class ChessGame {
         Collection<ChessMove> pseudoLegalMoves = piece.pieceMoves(board, startPosition);
 
         for (ChessMove move : pseudoLegalMoves) {
-            ChessBoard tempBoard = board.deepCoopy();
+            ChessBoard tempBoard = board.deepCopy();
             applyMove(move, tempBoard);
 
             if(!isInCheck(piece.getTeamColor(), tempBoard)) {
@@ -176,7 +176,7 @@ public class ChessGame {
         }
         return null;
     }
-
+    //BIG CHANGE TO MAKE THE CODE WORK
     private void applyMove(ChessMove move, ChessBoard boardToChange) {
         ChessPiece piece = boardToChange.getPiece(move.getStartPosition());
         if (move.getPromotionPiece() != null) {

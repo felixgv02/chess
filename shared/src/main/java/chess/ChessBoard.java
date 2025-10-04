@@ -81,8 +81,8 @@ public class ChessBoard {
             addPiece(new ChessPosition(7, col), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
         }
     }
-
-    public ChessBoard deepCoopy() {
+    //IMPORTANT PART TO MAKE THE CODE RUN
+    public ChessBoard deepCopy() {
         ChessBoard newBoard = new ChessBoard();
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
