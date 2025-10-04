@@ -173,11 +173,24 @@ public class ChessGame {
     }
 
     private ChessPosition findKingPosition(TeamColor teamColor, ChessBoard currentBoard) {
+        for (int r = 1; r <= 8; r++) {
+            for (int c = 1; c <= 8; c++) {
+                ChessPiece piece = currentBoard.getPiece(new ChessPosition(r, c));
+                if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING && piece.getTeamColor() == teamColor) {
+                    return new ChessPosition(r, c);
+                }
+            }
+        }
         return null;
     }
 
     private void applyMove(ChessMove move, ChessBoard boardToChange) {
-
+        ChessPiece piece = boardToChange.getPiece(move.getStartPosition());
+        if (move.getPromotionPiece() != null) {
+            piece = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
+        }
+        boardToChange.addPiece(move.getEndPosition(), piece);
+        boardToChange.addPiece(move.getStartPosition(), null);
     }
 
     private boolean hasNoValidMoves(TeamColor teamColor) {
