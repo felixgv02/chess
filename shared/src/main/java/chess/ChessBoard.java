@@ -82,6 +82,11 @@ public class ChessBoard {
         }
     }
 
+    //NEED TO CHANGE LATTER
+    public ChessBoard deepCoopy() {
+        return null;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -95,10 +100,5 @@ public class ChessBoard {
     public int hashCode() {
         // Use Arrays.deepHashCode for 2D arrays
         return Arrays.deepHashCode(squares);
-    }
-
-    //NEED TO CHANGE LATTER
-    public ChessBoard deepCoopy() {
-        return null;
     }
 }
