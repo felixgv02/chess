@@ -82,14 +82,13 @@ public class ChessBoard {
         }
     }
 
-    //NEED TO CHANGE LATTER
     public ChessBoard deepCoopy() {
         ChessBoard newBoard = new ChessBoard();
-        for (int r = 1; r < 8; r++) {
-            for (int c = 1; c < 8; c++) {
-                ChessPiece piece = this.squares[r][c];
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                ChessPiece piece = this.squares[row][col];
                 if  (piece != null) {
-                    newBoard.squares[r][c] = new ChessPiece(piece.getTeamColor(), piece.getPieceType());
+                    newBoard.squares[row][col] = new ChessPiece(piece.getTeamColor(), piece.getPieceType());
                 }
             }
         }
@@ -101,13 +100,11 @@ public class ChessBoard {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ChessBoard that = (ChessBoard) o;
-        // Use Arrays.deepEquals for 2D arrays of objects
         return Arrays.deepEquals(squares, that.squares);
     }
 
     @Override
     public int hashCode() {
-        // Use Arrays.deepHashCode for 2D arrays
         return Arrays.deepHashCode(squares);
     }
 }
