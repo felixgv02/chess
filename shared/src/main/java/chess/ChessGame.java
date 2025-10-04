@@ -194,7 +194,17 @@ public class ChessGame {
     }
 
     private boolean hasNoValidMoves(TeamColor teamColor) {
-        return false;
+        for (int r = 1; r <= 8; r++) {
+            for (int c = 1; c <= 8; c++) {
+                ChessPiece piece = board.getPiece(new ChessPosition(r, c));
+                if (piece != null && piece.getTeamColor() == teamColor) {
+                    if (!validMoves(new ChessPosition(r, c)).isEmpty()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 }
 
