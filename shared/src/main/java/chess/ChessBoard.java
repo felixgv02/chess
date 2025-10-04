@@ -84,7 +84,16 @@ public class ChessBoard {
 
     //NEED TO CHANGE LATTER
     public ChessBoard deepCoopy() {
-        return null;
+        ChessBoard newBoard = new ChessBoard();
+        for (int r = 1; r < 8; r++) {
+            for (int c = 1; c < 8; c++) {
+                ChessPiece piece = this.squares[r][c];
+                if  (piece != null) {
+                    newBoard.squares[r][c] = new ChessPiece(piece.getTeamColor(), piece.getPieceType());
+                }
+            }
+        }
+        return newBoard;
     }
 
     @Override
