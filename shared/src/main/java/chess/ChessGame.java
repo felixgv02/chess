@@ -167,9 +167,10 @@ public class ChessGame {
     private ChessPosition findKingPosition(TeamColor teamColor, ChessBoard currentBoard) {
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
-                ChessPiece piece = currentBoard.getPiece(new ChessPosition(row, col));
+                ChessPosition currPos = new ChessPosition(row, col);
+                ChessPiece piece = currentBoard.getPiece(currPos);
                 if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING && piece.getTeamColor() == teamColor) {
-                    return new ChessPosition(row, col);
+                    return currPos;
                 }
             }
         }
@@ -188,6 +189,7 @@ public class ChessGame {
     private boolean hasNoValidMoves(TeamColor teamColor) {
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
+
                 ChessPiece piece = board.getPiece(new ChessPosition(row, col));
                 if (piece != null && piece.getTeamColor() == teamColor) {
                     if (!validMoves(new ChessPosition(row, col)).isEmpty()) {
