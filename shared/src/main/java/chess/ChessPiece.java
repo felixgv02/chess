@@ -1,7 +1,7 @@
 package chess;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Represents a single chess piece
@@ -13,10 +13,12 @@ public class ChessPiece {
 
     private final ChessGame.TeamColor pieceColor;
     private final PieceType type;
+    private final PieceMoveCalculator moveCalculator;
 
-    public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+    public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type, PieceMoveCalculator moveCalculator) {
         this.pieceColor = pieceColor;
         this.type = type;
+        this.moveCalculator = moveCalculator; //temporal
     }
 
     /**
@@ -53,10 +55,9 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        ChessPiece piece = board.getPiece(myPosition);
-        if(piece.getPieceType() == ChessPiece.PieceType.BISHOP) {
-            return List.of(new ChessMove(new ChessPosition(5, 4), new ChessPosition(1,8), null));
+        if (moveCalculator != null) {
+            return moveCalculator.pieceMoves(board, myPosition);
         }
-        return List.of();
+        return new ArrayList<>();
     }
 }
