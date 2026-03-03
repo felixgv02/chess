@@ -53,5 +53,36 @@ public class Server {
         ctx.status(200);
         ctx.json(result);
     }
-
+    private void loginHandler(Context ctx) throws DataAccessException {
+        UserService.LoginRequest request = gson.fromJson(ctx.body(), UserService.LoginRequest.class);
+        UserService.LoginResult result = userService.login(request);
+        ctx.status(200);
+        ctx.json(result);
+    }
+    private void logoutHandler(Context ctx) throws DataAccessException {
+        String authToken = ctx.header("authorization");
+        userService.logout(authToken);
+        ctx.status(200);
+        ctx.json(new Object());
+    }
+    private void listGamesHandler(Context ctx) throws DataAccessException {
+        String authToken = ctx.header("authorization");
+        GameService.ListGamesResult result = gameService.listGames(authToken);
+        ctx.status(200);
+        ctx.json(result);
+    }
+    private void createGameHandler(Context ctx) throws DataAccessException {
+        String authToken = ctx.header("authorization");
+        GameService.CreateGameRequest request = gson.fromJson(ctx.body(), GameService.CreateGameRequest.class);
+        GameService.CreateGameResult result = gameService.createGame(authToken, request);
+        ctx.status(200);
+        ctx.json(result);
+    }
+    private void joinGameHandler(Context ctx) throws DataAccessException {
+        String authToken = ctx.header("authorization");
+        GameService.JoinGameRequest request = gson.fromJson(ctx.body(), GameService.JoinGameRequest.class);
+        gameService.joinGame(authToken, request);
+        ctx.status(200);
+        ctx.json(new Object());
+    }
 }
