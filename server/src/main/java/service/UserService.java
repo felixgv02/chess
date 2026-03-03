@@ -11,7 +11,6 @@ public class UserService {
         this.userDAO = userDAO;
         this.authDAO = authDAO;
     }
-
     public record RegisterRequest(String username, String password, String email) {}
     public record RegisterResult(String username, String authToken) {}
     public RegisterResult register(RegisterRequest req) throws DataAccessException {
@@ -26,10 +25,13 @@ public class UserService {
         authDAO.createAuth(new AuthData(authToken, req.username()));
         return new RegisterResult(req.username(), authToken);
     }
-
     public record LoginRequest(String username, String password) {}
     public record LoginResult(String username, String authToken) {}
     public LoginResult login(LoginRequest req) throws DataAccessException {
+        if (req.username() == null || req.password() == null) {
+            throw new DataAccessException("Error: bad request");
+        }
+
         UserData user = userDAO.getUser(req.username());
         if (user == null || !user.password().equals(req.password())) {
             throw new DataAccessException("Error: unauthorized");

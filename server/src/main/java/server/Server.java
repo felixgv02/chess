@@ -39,50 +39,50 @@ public class Server {
         else if (e.getMessage().equals("Error: unauthorized")) ctx.status(401);
         else if (e.getMessage().equals("Error: already taken")) ctx.status(403);
         else ctx.status(500);
-        ctx.json(new ErrorResult(e.getMessage()));
+        ctx.result(gson.toJson(new ErrorResult(e.getMessage())));
     }
     record ErrorResult(String message) {}
     private void clearHandler(Context ctx) throws DataAccessException {
         clearService.clear();
         ctx.status(200);
-        ctx.json(new Object());
+        ctx.result("{}");
     }
     private void registerHandler(Context ctx) throws DataAccessException {
         UserService.RegisterRequest request = gson.fromJson(ctx.body(), UserService.RegisterRequest.class);
         UserService.RegisterResult result = userService.register(request);
         ctx.status(200);
-        ctx.json(result);
+        ctx.result(gson.toJson(result));
     }
     private void loginHandler(Context ctx) throws DataAccessException {
         UserService.LoginRequest request = gson.fromJson(ctx.body(), UserService.LoginRequest.class);
         UserService.LoginResult result = userService.login(request);
         ctx.status(200);
-        ctx.json(result);
+        ctx.result(gson.toJson(result));
     }
     private void logoutHandler(Context ctx) throws DataAccessException {
         String authToken = ctx.header("authorization");
         userService.logout(authToken);
         ctx.status(200);
-        ctx.json(new Object());
+        ctx.result("{}");
     }
     private void listGamesHandler(Context ctx) throws DataAccessException {
         String authToken = ctx.header("authorization");
         GameService.ListGamesResult result = gameService.listGames(authToken);
         ctx.status(200);
-        ctx.json(result);
+        ctx.result(gson.toJson(result));
     }
     private void createGameHandler(Context ctx) throws DataAccessException {
         String authToken = ctx.header("authorization");
         GameService.CreateGameRequest request = gson.fromJson(ctx.body(), GameService.CreateGameRequest.class);
         GameService.CreateGameResult result = gameService.createGame(authToken, request);
         ctx.status(200);
-        ctx.json(result);
+        ctx.result(gson.toJson(result));
     }
     private void joinGameHandler(Context ctx) throws DataAccessException {
         String authToken = ctx.header("authorization");
         GameService.JoinGameRequest request = gson.fromJson(ctx.body(), GameService.JoinGameRequest.class);
         gameService.joinGame(authToken, request);
         ctx.status(200);
-        ctx.json(new Object());
+        ctx.result("{}");
     }
 }
