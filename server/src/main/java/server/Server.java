@@ -13,44 +13,48 @@ import io.javalin.http.Context;
 public class Server {
     private final Javalin javalin;
 
-    private final UserDAO userDAO = new MemoryUserDAO();
-    private final AuthDAO authDAO = new MemoryAuthDAO();
-    private final GameDAO gameDAO = new MemoryGameDAO();
-
-    private final UserService userService = new UserService(userDAO, authDAO);
-    private final GameService gameService = new GameService(gameDAO, authDAO);
-    private final ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
-
     private final Gson gson = new Gson();
 
-    public Server() {
+        public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
-        javalin.exception(DataAccessException.class, this::exceptionHandler);
+            try {
+                UserDAO userDAO = new MySQLUserDAO();
+                AuthDAO authDAO = new MySQLAuthDAO();
+                GameDAO gameDAO = new MySQLGameDAO();
 
-        // Register handlers
-        javalin.delete("/db", new ClearHandler(clearService, gson));
-        javalin.post("/user", new RegisterHandler(userService, gson));
-        javalin.post("/session", new LoginHandler(userService, gson));
-        javalin.delete("/session", new LogoutHandler(userService));
-        javalin.get("/game", new ListGamesHandler(gameService, gson));
-        javalin.post("/game", new CreateGameHandler(gameService, gson));
-        javalin.put("/game", new JoinGameHandler(gameService, gson));
-    }
+                UserService userService = new UserService(userDAO, authDAO);
+                GameService gameService = new GameService(gameDAO, authDAO);
+                ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
 
-    public int run(int desiredPort) {
+                javalin.exception(DataAccessException.class, this::exceptionHandler);
+
+                // Register handlers
+                javalin.delete("/db", new ClearHandler(clearService, gson));
+                javalin.post("/user", new RegisterHandler(userService, gson));
+                javalin.post("/session", new LoginHandler(userService, gson));
+                javalin.delete("/session", new LogoutHandler(userService));
+                javalin.get("/game", new ListGamesHandler(gameService, gson));
+                javalin.post("/game", new CreateGameHandler(gameService, gson));
+                javalin.put("/game", new JoinGameHandler(gameService, gson));
+            } catch (DataAccessException e) {
+                System.err.println(("Unable to configure Database: " + e.getMessage()));
+            }
+        }
+
+        public int run ( int desiredPort){
         javalin.start(desiredPort);
         return javalin.port();
     }
 
-    public void stop() {
+        public void stop () {
         javalin.stop();
     }
 
-    /**
-     * Translates thrown DataAccessExceptions into HTTP Error Responses.
-     */
-    private void exceptionHandler(DataAccessException e, Context ctx) {
+        /**
+         * Translates thrown DataAccessExceptions into HTTP Error Responses.
+         */
+        private void exceptionHandler (DataAccessException e, Context ctx){
         if (e.getMessage().equals("Error: bad request"))
             ctx.status(400);
         else if (e.getMessage().equals("Error: unauthorized"))
@@ -59,9 +63,9 @@ public class Server {
             ctx.status(403);
         else
             ctx.status(500);
-        ctx.result(gson.toJson(new ErrorResult(e.getMessage())));
-    }
+            ctx.result(new Gson().toJson(new ErrorResult("Error: " + e.getMessage())));
+        }
 
-    private record ErrorResult(String message) {
-    }
+        private record ErrorResult(String message) {
+        }
 }

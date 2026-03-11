@@ -36,9 +36,12 @@ public class UserService {
         if (userDAO.getUser(req.username()) != null) {
             throw new DataAccessException("Error: already taken");
         }
-        userDAO.createUser(new UserData(req.username(), req.password(), req.email()));
-        String authToken = UUID.randomUUID().toString();
-        authDAO.createAuth(new AuthData(authToken, req.username()));
+
+        String hashedPassword = org.mindrot.jbcrypt.BCrypt.hashpw(req.password(), org.mindrot.jbcrypt.BCrypt.gensalt());
+        userDAO.createUser(new UserData(req.username(), hashedPassword, req.email()));
+
+        String authToken = java.util.UUID.randomUUID().toString();
+        authDAO.createAuth(new model.AuthData(authToken, req.username()));
         return new RegisterResult(req.username(), authToken);
     }
 
@@ -53,13 +56,13 @@ public class UserService {
         if (req.username() == null || req.password() == null) {
             throw new DataAccessException("Error: bad request");
         }
-
         UserData user = userDAO.getUser(req.username());
-        if (user == null || !user.password().equals(req.password())) {
+        if (user == null || !org.mindrot.jbcrypt.BCrypt.checkpw(req.password(), user.password())) {
             throw new DataAccessException("Error: unauthorized");
         }
-        String authToken = UUID.randomUUID().toString();
-        authDAO.createAuth(new AuthData(authToken, req.username()));
+
+        String authToken = java.util.UUID.randomUUID().toString();
+        authDAO.createAuth(new model.AuthData(authToken, req.username()));
         return new LoginResult(req.username(), authToken);
     }
 
