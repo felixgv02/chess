@@ -1,12 +1,14 @@
 package dataaccess;
 
 import model.AuthData;
+import server.dataaccess.AuthDAO;
 import server.dataaccess.DataAccessException;
 
 import java.sql.SQLException;
 
 public class MySQLAuthDAO implements AuthDAO {
-    public MySqlAuthDAO() throws DataAccessException {
+
+    public MySQLAuthDAO() throws DataAccessException {
         configureDatabase();
     }
     @Override
@@ -31,4 +33,29 @@ public class MySQLAuthDAO implements AuthDAO {
         }
         return null;
     }
+
+    @Override
+    public void deleteAuth(String authToken) throws DataAccessException {
+        var statement = "DELETE FROM auths WHERE authToken=?";
+        executeUpdate(statement, authToken);
+    }
+    @Override
+    public void clear() throws DataAccessException {
+        var statement = "TRUNCATE auths";
+        executeUpdate(statement);
+    }
+    private void executeUpdate(String statement, Object... params) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(statement)) {
+            for (int i = 0; i < params.length; i++) {
+                if (params[i] instanceof String) ps.setString(i + 1, (String) params[i]);
+                else if (params[i] instanceof Integer) ps.setInt(i + 1, (Integer) params[i]);
+                else if (params[i] == null) ps.setNull(i + 1, java.sql.Types.NULL);
+            }
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
+        }
+    }
+
 }
