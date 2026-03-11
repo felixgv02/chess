@@ -1,9 +1,8 @@
-package dataaccess;
+package server.dataaccess;
 
+
+import dataaccess.DatabaseManager;
 import model.AuthData;
-import server.dataaccess.AuthDAO;
-import server.dataaccess.DataAccessException;
-
 import java.sql.SQLException;
 
 //MySQL implementation of the AuthDAO for storing user sessions in a database.

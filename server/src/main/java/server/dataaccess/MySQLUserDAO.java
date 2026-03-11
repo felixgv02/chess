@@ -1,11 +1,11 @@
 package server.dataaccess;
 
 import dataaccess.DatabaseManager;
-import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
 import java.sql.SQLException;
+import model.UserData;
 
-public class MySQLUserDAO  implements UserDAO{
+public class MySQLUserDAO  implements UserDAO {
     //Initializes the DAO and creates the users table if it does not exist.
     public MySQLUserDAO() throws DataAccessException {
         configureDatabase();
