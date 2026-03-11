@@ -6,8 +6,9 @@ import server.dataaccess.DataAccessException;
 
 import java.sql.SQLException;
 
+//MySQL implementation of the AuthDAO for storing user sessions in a database.
 public class MySQLAuthDAO implements AuthDAO {
-
+    //Initializes the DAO and creates the auths table if it does not exist.
     public MySQLAuthDAO() throws DataAccessException {
         configureDatabase();
     }
@@ -16,6 +17,7 @@ public class MySQLAuthDAO implements AuthDAO {
         var statement = "INSERT INTO auths (authToken, username) VALUES (?, ?)";
         executeUpdate(statement, auth.authToken(), auth.username());
     }
+    //Retrieves an existing authentication session by its token.
     @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
@@ -58,4 +60,27 @@ public class MySQLAuthDAO implements AuthDAO {
         }
     }
 
+    private final String[] createStatements = {
+            """
+            CREATE TABLE IF NOT EXISTS auths (
+              `authToken` varchar(256) NOT NULL,
+              `username` varchar(256) NOT NULL,
+              PRIMARY KEY (`authToken`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            """
+    };
+
+    //Configures the database and creates necessary tables automatically.
+    private void configureDatabase() throws DataAccessException {
+        DatabaseManager.createDatabase();
+        try (var conn = DatabaseManager.getConnection()) {
+            for (var statement : createStatements) {
+                try (var preparedStatement = conn.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(String.format("Unable to configure database: %s", e.getMessage()));
+        }
+    }
 }
