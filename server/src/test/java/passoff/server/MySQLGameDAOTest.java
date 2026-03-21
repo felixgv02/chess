@@ -1,6 +1,5 @@
 package passoff.server;
 
-import chess.ChessGame;
 import model.GameData;
 import org.junit.jupiter.api.*;
 import server.dataaccess.DataAccessException;
