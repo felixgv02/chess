@@ -1,6 +1,7 @@
 package server.dataaccess;
 
 import dataaccess.DatabaseManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -21,15 +22,7 @@ public abstract class BaseDAO {
     protected int executeUpdate(String statement, Object... params) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection();
              var ps = conn.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)) {
-            for (int i = 0; i < params.length; i++) {
-                if (params[i] instanceof String) {
-                    ps.setString(i + 1, (String) params[i]);
-                } else if (params[i] instanceof Integer) {
-                    ps.setInt(i + 1, (Integer) params[i]);
-                } else if (params[i] == null) {
-                    ps.setNull(i + 1, java.sql.Types.NULL);
-                }
-            }
+            setParameters(ps, params);
             ps.executeUpdate();
 
             var rs = ps.getGeneratedKeys();
@@ -45,18 +38,22 @@ public abstract class BaseDAO {
     protected void executeUpdateNoReturn(String statement, Object... params) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection();
              var ps = conn.prepareStatement(statement)) {
-            for (int i = 0; i < params.length; i++) {
-                if (params[i] instanceof String) {
-                    ps.setString(i + 1, (String) params[i]);
-                } else if (params[i] instanceof Integer) {
-                    ps.setInt(i + 1, (Integer) params[i]);
-                } else if (params[i] == null) {
-                    ps.setNull(i + 1, java.sql.Types.NULL);
-                }
-            }
+            setParameters(ps, params);
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
+        }
+    }
+
+    private void setParameters(PreparedStatement ps, Object... params) throws SQLException {
+        for (int i = 0; i < params.length; i++) {
+            if (params[i] instanceof String) {
+                ps.setString(i + 1, (String) params[i]);
+            } else if (params[i] instanceof Integer) {
+                ps.setInt(i + 1, (Integer) params[i]);
+            } else if (params[i] == null) {
+                ps.setNull(i + 1, java.sql.Types.NULL);
+            }
         }
     }
 }
