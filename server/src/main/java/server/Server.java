@@ -55,14 +55,15 @@ public class Server {
          * Translates thrown DataAccessExceptions into HTTP Error Responses.
          */
         private void exceptionHandler (DataAccessException e, Context ctx){
-        if (e.getMessage().equals("Error: bad request"))
-            ctx.status(400);
-        else if (e.getMessage().equals("Error: unauthorized"))
-            ctx.status(401);
-        else if (e.getMessage().equals("Error: already taken"))
-            ctx.status(403);
-        else
-            ctx.status(500);
+            if (e.getMessage().equals("Error: bad request")) {
+                ctx.status(400);
+            } else if (e.getMessage().equals("Error: unauthorized")) {
+                ctx.status(401);
+            } else if (e.getMessage().equals("Error: already taken")) {
+                ctx.status(403);
+            } else {
+                ctx.status(500);
+            }
             ctx.result(new Gson().toJson(new ErrorResult("Error: " + e.getMessage())));
         }
 

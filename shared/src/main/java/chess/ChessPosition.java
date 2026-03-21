@@ -41,10 +41,14 @@ public class ChessPosition {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ChessPosition ChessPosition = (ChessPosition) o;
-        return row == ChessPosition.row && col == ChessPosition.col;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessPosition chessPosition = (ChessPosition) o;
+        return row == chessPosition.row && col == chessPosition.col;
     }
 
     @Override

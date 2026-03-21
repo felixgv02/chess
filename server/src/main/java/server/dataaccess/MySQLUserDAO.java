@@ -2,19 +2,19 @@ package server.dataaccess;
 
 import dataaccess.DatabaseManager;
 import org.mindrot.jbcrypt.BCrypt;
-import java.sql.SQLException;
+
 import model.UserData;
 
-public class MySQLUserDAO  implements UserDAO {
+public class MySQLUserDAO extends BaseDAO implements UserDAO {
     //Initializes the DAO and creates the users table if it does not exist.
     public MySQLUserDAO() throws DataAccessException {
-        configureDatabase();
+        configureDatabase(createStatements);
     }
     //Creates a new user in the database. Hashes the password prior to saving.
     @Override
     public void createUser(UserData u) throws DataAccessException {
         var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
-        executeUpdate(statement, u.username(), u.password(), u.email());
+        executeUpdateNoReturn(statement, u.username(), u.password(), u.email());
     }
 
     //Retrieves an existing user by username.
@@ -40,22 +40,7 @@ public class MySQLUserDAO  implements UserDAO {
     @Override
     public void clear() throws DataAccessException {
         var statement = "TRUNCATE users";
-        executeUpdate(statement);
-    }
-
-    //Helper method to execute updates, centralized to avoid duplicated code (Code Decomposition).
-    private void executeUpdate(String statement, Object... params) throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection();
-             var ps = conn.prepareStatement(statement)) {
-            for (int i = 0; i < params.length; i++) {
-                if (params[i] instanceof String) ps.setString(i + 1, (String) params[i]);
-                else if (params[i] instanceof Integer) ps.setInt(i + 1, (Integer) params[i]);
-                else if (params[i] == null) ps.setNull(i + 1, java.sql.Types.NULL);
-            }
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
-        }
+        executeUpdateNoReturn(statement);
     }
 
     //Database table creation statements.
@@ -70,17 +55,5 @@ public class MySQLUserDAO  implements UserDAO {
             """
     };
 
-    //Configures the database and creates necessary tables automatically.
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException(String.format("Unable to configure database: %s", e.getMessage()));
-        }
-    }
+
 }

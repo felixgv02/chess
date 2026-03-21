@@ -6,16 +6,15 @@ import com.google.gson.Gson;
 import model.GameData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class MySQLGameDAO implements GameDAO{
+public class MySQLGameDAO extends BaseDAO implements GameDAO{
     /**
      * Initializes the DAO and creates the games table if it does not exist.
      */
     public MySQLGameDAO() throws DataAccessException {
-        configureDatabase();
+        configureDatabase(createStatements);
     }
     /**
      * Creates a new game and stores it. Serializes the ChessGame to JSON.
@@ -91,41 +90,7 @@ public class MySQLGameDAO implements GameDAO{
         return new GameData(gameID, whiteUsername, blackUsername, gameName, game);
     }
 
-    //Helper method to execute updates that require an auto-generated ID (Code Decomposition).
-    private int executeUpdate(String statement, Object... params) throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection();
-             var ps = conn.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)) {
-            for (int i = 0; i < params.length; i++) {
-                if (params[i] instanceof String) ps.setString(i + 1, (String) params[i]);
-                else if (params[i] instanceof Integer) ps.setInt(i + 1, (Integer) params[i]);
-                else if (params[i] == null) ps.setNull(i + 1, java.sql.Types.NULL);
-            }
-            ps.executeUpdate();
-
-            var rs = ps.getGeneratedKeys();
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-            return 0;
-        } catch (SQLException e) {
-            throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
-        }
-    }
-
     //Helper method to execute updates with no returned keys (e.g., TRUNCATE).
-    private void executeUpdateNoReturn(String statement, Object... params) throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection();
-             var ps = conn.prepareStatement(statement)) {
-            for (int i = 0; i < params.length; i++) {
-                if (params[i] instanceof String) ps.setString(i + 1, (String) params[i]);
-                else if (params[i] instanceof Integer) ps.setInt(i + 1, (Integer) params[i]);
-                else if (params[i] == null) ps.setNull(i + 1, java.sql.Types.NULL);
-            }
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
-        }
-    }
 
     //Database table creation statements.
     private final String[] createStatements = {
@@ -141,17 +106,5 @@ public class MySQLGameDAO implements GameDAO{
             """
     };
 
-    //Configures the database and creates necessary tables automatically.
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException(String.format("Unable to configure database: %s", e.getMessage()));
-        }
-    }
+
 }

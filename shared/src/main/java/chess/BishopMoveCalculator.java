@@ -17,7 +17,9 @@ public class BishopMoveCalculator implements PieceMoveCalculator {
         return moves;
     }
 
-    public void calculateMoves(ChessBoard board, ChessPosition startPosition, ChessGame.TeamColor myColor, Collection<ChessMove> moves, int row, int col) {
+    public void calculateMoves(
+            ChessBoard board, ChessPosition startPosition, ChessGame.TeamColor myColor, 
+            Collection<ChessMove> moves, int row, int col) {
         int currRow = startPosition.getRow();
         int currCol = startPosition.getColumn();
 

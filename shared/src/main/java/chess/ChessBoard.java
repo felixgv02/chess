@@ -87,10 +87,14 @@ public class ChessBoard {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ChessBoard ChessBoard = (ChessBoard) o;
-        return Arrays.deepEquals(squares, ChessBoard.squares);
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessBoard chessBoard = (ChessBoard) o;
+        return Arrays.deepEquals(squares, chessBoard.squares);
     }
 
     @Override

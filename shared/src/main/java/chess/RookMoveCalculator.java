@@ -8,18 +8,20 @@ public class RookMoveCalculator implements PieceMoveCalculator {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
         Collection<ChessMove> moves = new ArrayList<>();
 
-        CalculateMoves(board, position, moves, 1, 0);
-        CalculateMoves(board, position, moves, -1, 0);
-        CalculateMoves(board, position, moves, 0, -1);
-        CalculateMoves(board, position, moves, 0, 1);
+        calculateMoves(board, position, moves, 1, 0);
+        calculateMoves(board, position, moves, -1, 0);
+        calculateMoves(board, position, moves, 0, -1);
+        calculateMoves(board, position, moves, 0, 1);
 
         return moves;
     }
 
-    private void CalculateMoves(ChessBoard board, ChessPosition position, Collection<ChessMove> moves, int row, int col) {
+    private void calculateMoves(ChessBoard board, ChessPosition position, Collection<ChessMove> moves, int row, int col) {
         ChessPiece startingPiece = board.getPiece(position);
-        if(startingPiece == null) return;
-        ChessGame.TeamColor  myColor = startingPiece.getTeamColor();
+        if (startingPiece == null) {
+            return;
+        }
+        ChessGame.TeamColor myColor = startingPiece.getTeamColor();
 
         int currRow = position.getRow();
         int currCol = position.getColumn();

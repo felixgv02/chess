@@ -54,7 +54,9 @@ public class ChessGame {
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece piece = board.getPiece(startPosition);
 
-        if(piece == null) return null;
+        if (piece == null) {
+            return null;
+        }
 
         Collection<ChessMove> candidates = piece.pieceMoves(board, startPosition);
         Collection<ChessMove> validMoves = new ArrayList<>();
@@ -128,18 +130,21 @@ public class ChessGame {
             }
         }
 
-        if(kingPos == null) return false;
+        if (kingPos == null) {
+            return false;
+        }
 
         for(int r=1;r<=8;r++) {
             for(int c=1;c<=8;c++) {
                 ChessPosition p = new ChessPosition(r, c);
                 ChessPiece  piece = board.getPiece(p);
-                if(piece != null && piece.getTeamColor() != teamColor) {
-                    Collection<ChessMove> enemyMoves = piece.pieceMoves(board, p);
-                    for(ChessMove m : enemyMoves) {
-                        if(m.getEndPosition().equals(kingPos)) {
-                            return true;
-                        }
+                if (piece == null || piece.getTeamColor() == teamColor) {
+                    continue;
+                }
+                Collection<ChessMove> enemyMoves = piece.pieceMoves(board, p);
+                for(ChessMove m : enemyMoves) {
+                    if(m.getEndPosition().equals(kingPos)) {
+                        return true;
                     }
                 }
             }
@@ -205,7 +210,9 @@ public class ChessGame {
 
     @Override
     public boolean equals(Object o) {
-        if(this == o) return true;
+        if (this == o) {
+            return true;
+        }
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
