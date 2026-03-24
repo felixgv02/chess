@@ -3,7 +3,6 @@ package client;
 import static org.junit.jupiter.api.Assertions.*;
 import client.facade.ResponseException;
 import client.facade.ServerFacade;
-import model.AuthData;
 import org.junit.jupiter.api.*;
 import server.Server;
 
@@ -76,5 +75,35 @@ public class ServerFacadeTests {
         assertTrue(res.gameID() > 0);
     }
 
+    @Test
+    void createGameFailBadToken() {
+        assertThrows(ResponseException.class, () -> facade.createGame("bogus", "myGame"));
+    }
+    @Test
+    void listGamesSuccess() throws Exception {
+        var auth = facade.register("player1", "password", "p1@email.com");
+        facade.createGame(auth.authToken(), "g1");
+        facade.createGame(auth.authToken(), "g2");
+        var list = facade.listGames(auth.authToken());
+        assertEquals(2, list.size());
+    }
+    @Test
+    void listGamesFailBadToken() {
+        assertThrows(ResponseException.class, () -> facade.listGames("bogus"));
+    }
+    @Test
+    void joinGameSuccess() throws Exception {
+        var auth = facade.register("player1", "password", "p1@email.com");
+        var game = facade.createGame(auth.authToken(), "g1");
+        assertDoesNotThrow(() -> facade.joinGame(auth.authToken(), "WHITE", game.gameID()));
+    }
+    @Test
+    void joinGameFailAlreadyTaken() throws Exception {
+        var auth = facade.register("player1", "password", "p1@email.com");
+        var game = facade.createGame(auth.authToken(), "g1");
+        facade.joinGame(auth.authToken(), "WHITE", game.gameID());
 
+        var auth2 = facade.register("player2", "pass", "p2@mail.com");
+        assertThrows(ResponseException.class, () -> facade.joinGame(auth2.authToken(), "WHITE", game.gameID()));
+    }
 }
