@@ -44,4 +44,37 @@ public class ServerFacadeTests {
         assertEquals("player1", authData.username());
     }
 
+    @Test
+    void registerFailDuplicate() throws Exception {
+        facade.register("player1", "password", "p1@email.com");
+        assertThrows(ResponseException.class, () -> facade.register("player1", "pass", "email"));
+    }
+    @Test
+    void loginSuccess() throws Exception {
+        facade.register("player1", "password", "p1@email.com");
+        var authObj = facade.login("player1", "password");
+        assertNotNull(authObj.authToken());
+    }
+    @Test
+    void loginFailBadPassword() throws Exception {
+        facade.register("player1", "password", "p1@email.com");
+        assertThrows(ResponseException.class, () -> facade.login("player1", "wrong"));
+    }
+    @Test
+    void logoutSuccess() throws Exception {
+        var auth = facade.register("player1", "password", "p1@email.com");
+        assertDoesNotThrow(() -> facade.logout(auth.authToken()));
+    }
+    @Test
+    void logoutFailBadToken() {
+        assertThrows(ResponseException.class, () -> facade.logout("bogusToken"));
+    }
+    @Test
+    void createGameSuccess() throws Exception {
+        var auth = facade.register("player1", "password", "p1@email.com");
+        var res = facade.createGame(auth.authToken(), "myGame");
+        assertTrue(res.gameID() > 0);
+    }
+
+
 }
