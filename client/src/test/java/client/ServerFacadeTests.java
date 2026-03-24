@@ -1,12 +1,19 @@
 package client;
 
+import static org.junit.jupiter.api.Assertions.*;
+import client.facade.ResponseException;
+import client.facade.ServerFacade;
+import model.AuthData;
 import org.junit.jupiter.api.*;
 import server.Server;
+
+
 
 
 public class ServerFacadeTests {
 
     private static Server server;
+    static ServerFacade facade;
 
     @BeforeAll
     public static void init() {
@@ -24,6 +31,17 @@ public class ServerFacadeTests {
     @Test
     public void sampleTest() {
         Assertions.assertTrue(true);
+    }
+
+    @BeforeEach
+    void clear() throws Exception {
+        facade.clearDatabase();
+    }
+    @Test
+    void registerSuccess() throws Exception {
+        var authData = facade.register("player1", "password", "p1@email.com");
+        assertNotNull(authData.authToken());
+        assertEquals("player1", authData.username());
     }
 
 }
