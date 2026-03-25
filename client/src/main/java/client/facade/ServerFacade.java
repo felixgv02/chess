@@ -63,23 +63,24 @@ public class ServerFacade {
     private static void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
         var status = http.getResponseCode();
         if (!isSuccessful(status)) {
+            String message = "Server returned HTTP status " + status;
             try (InputStream errorStream = http.getErrorStream()) {
                 if (errorStream != null) {
                     var errorMap = new Gson().fromJson(new InputStreamReader(errorStream), java.util.Map.class);
-                    throw new ResponseException(status, (String) errorMap.get("message"));
+                    if (errorMap != null && errorMap.get("message") != null) {
+                        message = (String) errorMap.get("message");
+                    }
                 }
-            }
-            throw new ResponseException(status, "other error");
+            } catch (Exception ignored) {}
+            throw new ResponseException(status, message);
         }
     }
     private static <T> T readBody(HttpURLConnection http, Class<T> responseClass) throws IOException {
         T response = null;
-        if (http.getContentLength() < 0) {
+        if (responseClass != null) {
             try (InputStream respBody = http.getInputStream()) {
                 InputStreamReader reader = new InputStreamReader(respBody);
-                if (responseClass != null) {
-                    response = new Gson().fromJson(reader, responseClass);
-                }
+                response = new Gson().fromJson(reader, responseClass);
             }
         }
         return response;

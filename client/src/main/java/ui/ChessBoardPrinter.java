@@ -59,7 +59,7 @@ public class ChessBoardPrinter {
             }
         }
         for (String letter : letters) {
-            System.out.print(" " + letter + " \u2003");
+            System.out.print(" " + letter + "\u2003");
         }
         System.out.println("   " + RESET_BG_COLOR);
     }

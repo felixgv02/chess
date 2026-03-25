@@ -65,6 +65,8 @@ public class PostLoginMenu {
                         // Draw board from perspective
                         boolean isWhite = color.equals("WHITE");
                         ChessBoardPrinter.printBoard(new ChessGame().getBoard(), isWhite);
+                    } catch (ResponseException e) {
+                        System.out.println(SET_TEXT_COLOR_RED + e.getMessage());
                     } catch (Exception e) {
                         System.out.println(SET_TEXT_COLOR_RED + "Invalid physical game ID. Did you `list` first?");
                     }
