@@ -20,16 +20,22 @@ public class Repl {
         while (true) {
             System.out.print(SET_TEXT_COLOR_GREEN + (currentAuth == null ? "[LOGGED_OUT]" : "[LOGGED_IN]") + " >>> " + SET_TEXT_COLOR_WHITE);
             String line = scanner.nextLine().trim();
-            if (line.isEmpty()) continue;
+            if (line.isEmpty()) {
+                continue;
+            }
 
             String[] args = line.split(" ");
             String cmd = args[0].toLowerCase();
 
             try {
                 if (currentAuth == null) {
-                    if (!new PreLoginMenu(facade, this).handleCommand(cmd, args)) break;
+                    if (!new PreLoginMenu(facade, this).handleCommand(cmd, args)) {
+                        break;
+                    }
                 } else {
-                    if (!new PostLoginMenu(facade, this).handleCommand(cmd, args)) break;
+                    if (!new PostLoginMenu(facade, this).handleCommand(cmd, args)) {
+                        break;
+                    }
                 }
             } catch (Exception e) {
                 System.out.println(SET_TEXT_COLOR_RED + e.getMessage() + SET_TEXT_COLOR_WHITE);

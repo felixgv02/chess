@@ -15,7 +15,8 @@ public class PreLoginMenu {
     public boolean handleCommand(String cmd, String[] args) throws ResponseException {
         switch (cmd) {
             case "help":
-                System.out.println(SET_TEXT_COLOR_BLUE + "register <USERNAME> <PASSWORD> <EMAIL>" + SET_TEXT_COLOR_MAGENTA + " - to create an account");
+                System.out.println(SET_TEXT_COLOR_BLUE + "register <USERNAME> <PASSWORD> <EMAIL>"
+                        + SET_TEXT_COLOR_MAGENTA + " - to create an account");
                 System.out.println(SET_TEXT_COLOR_BLUE + "login <USERNAME> <PASSWORD>" + SET_TEXT_COLOR_MAGENTA + " - to play chess");
                 System.out.println(SET_TEXT_COLOR_BLUE + "quit" + SET_TEXT_COLOR_MAGENTA + " - playing chess");
                 System.out.println(SET_TEXT_COLOR_BLUE + "help" + SET_TEXT_COLOR_MAGENTA + " - with possible commands");

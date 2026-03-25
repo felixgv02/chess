@@ -56,7 +56,9 @@ public class PostLoginMenu {
                 if (args.length == 3) {
                     try {
                         int listId = Integer.parseInt(args[1]);
-                        if (listId < 1 || listId > cachedGames.size()) throw new Exception();
+                        if (listId < 1 || listId > cachedGames.size()) {
+                            throw new Exception();
+                        }
                         GameData g = cachedGames.get(listId - 1);
                         String color = args[2].toUpperCase();
                         facade.joinGame(repl.getAuth().authToken(), color, g.gameID());
@@ -78,7 +80,9 @@ public class PostLoginMenu {
                 if (args.length == 2) {
                     try {
                         int listId = Integer.parseInt(args[1]);
-                        if (listId < 1 || listId > cachedGames.size()) throw new Exception();
+                        if (listId < 1 || listId > cachedGames.size()) {
+                            throw new Exception();
+                        }
                         GameData g = cachedGames.get(listId - 1);
                         System.out.println("Observing game: " + g.gameName());
 
