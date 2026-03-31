@@ -64,7 +64,7 @@ public class Server {
             } else {
                 ctx.status(500);
             }
-            ctx.result(new Gson().toJson(new ErrorResult("Error: " + e.getMessage())));
+            ctx.result(new Gson().toJson(new ErrorResult(e.getMessage())));
         }
 
         private record ErrorResult(String message) {
