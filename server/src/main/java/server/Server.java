@@ -59,7 +59,7 @@ public class Server {
         /**
          * Translates thrown DataAccessExceptions into HTTP Error Responses.
          */
-        private void exceptionHandler (DataAccessException e, Context ctx){
+        private void exceptionHandler (DataAccessException e, Context ctx) {
             if (e.getMessage().equals("Error: bad request")) {
                 ctx.status(400);
             } else if (e.getMessage().equals("Error: unauthorized")) {
@@ -69,7 +69,14 @@ public class Server {
             } else {
                 ctx.status(500);
             }
-            ctx.result(new Gson().toJson(new ErrorResult(e.getMessage())));
+
+            // Ensure ALL unhandled network errors pass the required wording check
+            String message = e.getMessage();
+            if (!message.startsWith("Error")) {
+                message = "Error: " + message;
+            }
+
+            ctx.result(new Gson().toJson(new ErrorResult(message)));
         }
 
         private record ErrorResult(String message) {

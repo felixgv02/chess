@@ -1,7 +1,6 @@
-package passoff.server;
+package service;
 
 import server.dataaccess.*;
-import service.*;
 import org.junit.jupiter.api.*;
 import service.request.CreateGameRequest;
 import service.request.JoinGameRequest;

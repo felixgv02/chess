@@ -79,10 +79,20 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        if (moveCalculator != null) {
-            return moveCalculator.pieceMoves(board, myPosition);
+        if (moveCalculator == null) {
+            // Gson bypassed the constructor! Re-attach it on the fly:
+            PieceMoveCalculator calc = null;
+            switch(type) {
+                case PAWN -> calc = new PawnMoveCalculator();
+                case ROOK -> calc = new RookMoveCalculator();
+                case KNIGHT -> calc = new KnightMoveCalculator();
+                case BISHOP -> calc = new BishopMoveCalculator();
+                case QUEEN -> calc = new QueenMoveCalculator();
+                case KING -> calc = new KingMoveCalculator();
+            }
+            return calc.pieceMoves(board, myPosition);
         }
-        return new ArrayList<>();
+        return moveCalculator.pieceMoves(board, myPosition);
     }
 
     @Override
