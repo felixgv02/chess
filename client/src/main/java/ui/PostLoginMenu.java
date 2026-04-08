@@ -63,10 +63,10 @@ public class PostLoginMenu {
                         String color = args[2].toUpperCase();
                         facade.joinGame(repl.getAuth().authToken(), color, g.gameID());
                         System.out.println("Successfully joined game as " + color);
-
                         // Draw board from perspective
-                        boolean isWhite = color.equals("WHITE");
-                        ChessBoardPrinter.printBoard(new ChessGame().getBoard(), isWhite);
+                        new GameplayMenu(repl, g.gameID(), color).run();
+
+
                     } catch (ResponseException e) {
                         System.out.println(SET_TEXT_COLOR_RED + e.getMessage());
                     } catch (Exception e) {
