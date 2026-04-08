@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import server.dataaccess.*;
+import server.websocket.WebSocketHandler;
 import service.*;
 import server.handlers.*;
 import io.javalin.Javalin;
@@ -19,6 +20,7 @@ public class Server {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
             try {
+
                 UserDAO userDAO = new MySQLUserDAO();
                 AuthDAO authDAO = new MySQLAuthDAO();
                 GameDAO gameDAO = new MySQLGameDAO();
@@ -26,6 +28,9 @@ public class Server {
                 UserService userService = new UserService(userDAO, authDAO);
                 GameService gameService = new GameService(gameDAO, authDAO);
                 ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
+
+                WebSocketHandler webSocketHandler = new WebSocketHandler(gameService, authDAO);
+                javalin.ws("/ws", webSocketHandler::configure);
 
                 javalin.exception(DataAccessException.class, this::exceptionHandler);
 

@@ -1,10 +1,8 @@
 package server.websocket;
 
-
 import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
-import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import io.javalin.websocket.WsConfig;
 import server.dataaccess.AuthDAO;
 import service.GameService;
 import websocket.commands.UserGameCommand;
@@ -13,8 +11,8 @@ import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ErrorMessage;
 
-@WebSocket
 public class WebSocketHandler {
+
     private final ConnectionManager connections = new ConnectionManager();
     private final GameService gameService;
     private final AuthDAO authDAO;
@@ -25,17 +23,26 @@ public class WebSocketHandler {
         this.authDAO = authDAO;
     }
 
-    @OnWebSocketMessage
-    public void onMessage(Session session, String message) throws Exception {
+    public void configure(WsConfig ws) {
+        ws.onMessage(ctx -> {
+            try {
+                onMessage(ctx.session, ctx.message());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private void onMessage(Session session, String message) throws Exception {
         UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
 
         try {
-            // Authenticate token dynamically against DB
             var auth = authDAO.getAuth(command.getAuthToken());
             if (auth == null) {
                 session.getRemote().sendString(gson.toJson(new ErrorMessage("Error: unauthorized")));
                 return;
             }
+
             switch (command.getCommandType()) {
                 case CONNECT -> connect(auth.username(), command.getGameID(), session);
                 case MAKE_MOVE -> {
@@ -52,7 +59,7 @@ public class WebSocketHandler {
 
     private void connect(String username, int gameID, Session session) throws Exception {
         connections.add(gameID, session);
-        var game = gameService.getGame(gameID); // Assume this hits SQL database!
+        var game = gameService.getGame(gameID);
 
         var loadMsg = new LoadGameMessage(game);
         session.getRemote().sendString(gson.toJson(loadMsg));
@@ -67,5 +74,22 @@ public class WebSocketHandler {
         connections.broadcast(gameID, gson.toJson(notif), session);
 
         // TODO: Check if user was white/black and securely update the GameData inside SQL DB to release their spot!
+    }
+
+    private void resign(String username, int gameID, Session session) throws Exception {
+        // TODO: Validate game isn't already resigned, update game status logically.
+        var notif = new NotificationMessage(username + " resigned from the game. Game over.");
+        connections.broadcast(gameID, gson.toJson(notif), null);
+    }
+
+    private void makeMove(String username, int gameID, MakeMoveCommand cmd, Session session) throws Exception {
+        // TODO: Validate move dynamically via gameService, update board explicitly, and save board back to SQL DB.
+
+        var game = gameService.getGame(gameID);
+        var loadMsg = new LoadGameMessage(game);
+        connections.broadcast(gameID, gson.toJson(loadMsg), null);
+
+        var notif = new NotificationMessage(username + " made a move.");
+        connections.broadcast(gameID, gson.toJson(notif), session);
     }
 }

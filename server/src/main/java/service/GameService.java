@@ -56,6 +56,10 @@ public class GameService {
         return new ListGamesResult(gameDAO.listGames());
     }
 
+    public GameData getGame(int gameID) throws server.dataaccess.DataAccessException {
+        return gameDAO.getGame(gameID);
+    }
+
     /**
      * Joins a user to a specific game.
      *
