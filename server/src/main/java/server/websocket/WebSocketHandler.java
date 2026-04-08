@@ -29,6 +29,12 @@ public class WebSocketHandler {
     }
 
     public void configure(WsConfig ws) {
+        ws.onConnect(ctx -> {
+            ctx.session.setIdleTimeout(java.time.Duration.ofMinutes(10));
+        });
+        ws.onClose(ctx -> {
+            System.out.println("SERVER WEBSOCKET CLOSED: " + ctx.status() + " -> " + ctx.reason());
+        });
         ws.onMessage(ctx -> {
             try {
                 onMessage(ctx.session, ctx.message());

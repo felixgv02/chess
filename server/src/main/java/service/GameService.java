@@ -84,12 +84,12 @@ public class GameService {
         String whiteUser = game.whiteUsername();
         String blackUser = game.blackUsername();
         if (req.playerColor().equals("WHITE")) {
-            if (whiteUser != null) {
+            if (whiteUser != null && !whiteUser.equals(auth.username())) {
                 throw new DataAccessException("Error: already taken");
             }
             whiteUser = auth.username();
         } else if (req.playerColor().equals("BLACK")) {
-            if (blackUser != null) {
+            if (blackUser != null && !blackUser.equals(auth.username())) {
                 throw new DataAccessException("Error: already taken");
             }
             blackUser = auth.username();

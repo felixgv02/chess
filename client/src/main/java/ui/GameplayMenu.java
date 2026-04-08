@@ -78,6 +78,7 @@ public class GameplayMenu implements ServerMessageObserver{
                 }
             } catch (Exception e) {
                 System.out.println(SET_TEXT_COLOR_RED + e.getMessage());
+                e.printStackTrace();
             }
         }
     }
