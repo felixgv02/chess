@@ -97,4 +97,8 @@ public class GameService {
         GameData updatedGame = new GameData(game.gameID(), whiteUser, blackUser, game.gameName(), game.game());
         gameDAO.updateGame(updatedGame);
     }
+
+    public void updateGame(GameData game) throws server.dataaccess.DataAccessException {
+        gameDAO.updateGame(game);
+    }
 }

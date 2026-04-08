@@ -5,11 +5,16 @@ import org.eclipse.jetty.websocket.api.Session;
 import io.javalin.websocket.WsConfig;
 import server.dataaccess.AuthDAO;
 import service.GameService;
+import model.GameData;
+import chess.ChessGame;
+import chess.ChessPiece;
 import websocket.commands.UserGameCommand;
 import websocket.commands.MakeMoveCommand;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ErrorMessage;
+
+import java.util.Objects;
 
 public class WebSocketHandler {
 
@@ -58,10 +63,18 @@ public class WebSocketHandler {
     }
 
     private void connect(String username, int gameID, Session session) throws Exception {
-        connections.add(gameID, session);
-        var game = gameService.getGame(gameID);
+        GameData gameData = null;
+        try {
+            gameData = gameService.getGame(gameID);
+        } catch (Exception ignored) {}
 
-        var loadMsg = new LoadGameMessage(game);
+        if (gameData == null) {
+            session.getRemote().sendString(gson.toJson(new ErrorMessage("Error: Invalid game ID")));
+            return;
+        }
+
+        connections.add(gameID, session);
+        var loadMsg = new LoadGameMessage(gameData);
         session.getRemote().sendString(gson.toJson(loadMsg));
 
         var notif = new NotificationMessage(username + " joined the game.");
@@ -70,26 +83,116 @@ public class WebSocketHandler {
 
     private void leave(String username, int gameID, Session session) throws Exception {
         connections.remove(gameID, session);
+
+        GameData gameData = gameService.getGame(gameID);
+        if (gameData != null) {
+            // Un-claim the player's spot if they held one
+            String newWhite = Objects.equals(gameData.whiteUsername(), username) ? null : gameData.whiteUsername();
+            String newBlack = Objects.equals(gameData.blackUsername(), username) ? null : gameData.blackUsername();
+
+            if (!Objects.equals(gameData.whiteUsername(), newWhite) || !Objects.equals(gameData.blackUsername(), newBlack)) {
+                GameData updatedGame = new GameData(gameID, newWhite, newBlack, gameData.gameName(), gameData.game());
+                gameService.updateGame(updatedGame);
+            }
+        }
+
         var notif = new NotificationMessage(username + " left the game.");
         connections.broadcast(gameID, gson.toJson(notif), session);
-
-        // TODO: Check if user was white/black and securely update the GameData inside SQL DB to release their spot!
     }
 
     private void resign(String username, int gameID, Session session) throws Exception {
-        // TODO: Validate game isn't already resigned, update game status logically.
+        GameData gameData = gameService.getGame(gameID);
+        if (gameData == null) return;
+
+        boolean isPlayer = Objects.equals(username, gameData.whiteUsername()) || Objects.equals(username, gameData.blackUsername());
+
+        if (!isPlayer) {
+            session.getRemote().sendString(gson.toJson(new ErrorMessage("Error: observers cannot resign")));
+            return;
+        }
+
+        if (gameData.game().isGameOver()) {
+            session.getRemote().sendString(gson.toJson(new ErrorMessage("Error: game is already over")));
+            return;
+        }
+
+        gameData.game().setGameOver(true);
+        gameService.updateGame(gameData);
+
         var notif = new NotificationMessage(username + " resigned from the game. Game over.");
         connections.broadcast(gameID, gson.toJson(notif), null);
     }
 
     private void makeMove(String username, int gameID, MakeMoveCommand cmd, Session session) throws Exception {
-        // TODO: Validate move dynamically via gameService, update board explicitly, and save board back to SQL DB.
+        GameData gameData = gameService.getGame(gameID);
+        if (gameData == null) {
+            session.getRemote().sendString(gson.toJson(new ErrorMessage("Error: Invalid game ID")));
+            return;
+        }
 
-        var game = gameService.getGame(gameID);
-        var loadMsg = new LoadGameMessage(game);
+        ChessGame game = gameData.game();
+
+        if (game.isGameOver()) {
+            session.getRemote().sendString(gson.toJson(new ErrorMessage("Error: Game is already over")));
+            return;
+        }
+
+        String playerColor = null;
+        if (Objects.equals(username, gameData.whiteUsername())) playerColor = "WHITE";
+        else if (Objects.equals(username, gameData.blackUsername())) playerColor = "BLACK";
+
+        if (playerColor == null) {
+            session.getRemote().sendString(gson.toJson(new ErrorMessage("Error: Observers cannot move pieces")));
+            return;
+        }
+
+        ChessPiece piece = game.getBoard().getPiece(cmd.getMove().getStartPosition());
+        if (piece == null || !piece.getTeamColor().toString().equals(playerColor)) {
+            session.getRemote().sendString(gson.toJson(new ErrorMessage("Error: It's not your piece to move")));
+            return;
+        }
+
+        if (!game.getTeamTurn().toString().equals(playerColor)) {
+            session.getRemote().sendString(gson.toJson(new ErrorMessage("Error: It's not your turn")));
+            return;
+        }
+
+        try {
+            game.makeMove(cmd.getMove());
+        } catch (Exception e) {
+            session.getRemote().sendString(gson.toJson(new ErrorMessage("Error: Invalid move")));
+            return;
+        }
+
+        // Check for edge cases
+        if (game.isInCheckmate(ChessGame.TeamColor.WHITE) || game.isInCheckmate(ChessGame.TeamColor.BLACK) ||
+                game.isInStalemate(ChessGame.TeamColor.WHITE) || game.isInStalemate(ChessGame.TeamColor.BLACK)) {
+            game.setGameOver(true);
+        }
+
+        gameService.updateGame(gameData);
+
+        var loadMsg = new LoadGameMessage(gameData);
         connections.broadcast(gameID, gson.toJson(loadMsg), null);
 
         var notif = new NotificationMessage(username + " made a move.");
         connections.broadcast(gameID, gson.toJson(notif), session);
+
+        // Send check/checkmate alerts securely across clients
+        if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
+            connections.broadcast(gameID, gson.toJson(new NotificationMessage("Black is in checkmate!")), null);
+        } else if (game.isInCheck(ChessGame.TeamColor.BLACK)) {
+            connections.broadcast(gameID, gson.toJson(new NotificationMessage("Black is in check!")), null);
+        }
+
+        if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
+            connections.broadcast(gameID, gson.toJson(new NotificationMessage("White is in checkmate!")), null);
+        } else if (game.isInCheck(ChessGame.TeamColor.WHITE)) {
+            connections.broadcast(gameID, gson.toJson(new NotificationMessage("White is in check!")), null);
+        }
+
+        if (game.isInStalemate(ChessGame.TeamColor.BLACK) || game.isInStalemate(ChessGame.TeamColor.WHITE)) {
+            connections.broadcast(gameID, gson.toJson(new NotificationMessage("Stalemate!")), null);
+        }
     }
 }
