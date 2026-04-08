@@ -1,4 +1,6 @@
 package server.websocket;
+
+
 import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
@@ -7,6 +9,8 @@ import server.dataaccess.AuthDAO;
 import service.GameService;
 import websocket.commands.UserGameCommand;
 import websocket.commands.MakeMoveCommand;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ErrorMessage;
 
 @WebSocket
@@ -46,4 +50,22 @@ public class WebSocketHandler {
         }
     }
 
+    private void connect(String username, int gameID, Session session) throws Exception {
+        connections.add(gameID, session);
+        var game = gameService.getGame(gameID); // Assume this hits SQL database!
+
+        var loadMsg = new LoadGameMessage(game);
+        session.getRemote().sendString(gson.toJson(loadMsg));
+
+        var notif = new NotificationMessage(username + " joined the game.");
+        connections.broadcast(gameID, gson.toJson(notif), session);
+    }
+
+    private void leave(String username, int gameID, Session session) throws Exception {
+        connections.remove(gameID, session);
+        var notif = new NotificationMessage(username + " left the game.");
+        connections.broadcast(gameID, gson.toJson(notif), session);
+
+        // TODO: Check if user was white/black and securely update the GameData inside SQL DB to release their spot!
+    }
 }
