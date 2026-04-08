@@ -38,7 +38,9 @@ public class GameplayMenu implements ServerMessageObserver{
         while (true) {
             System.out.print(SET_TEXT_COLOR_GREEN + "[IN_GAME] >>> " + SET_TEXT_COLOR_WHITE);
             String line = scanner.nextLine().trim();
-            if (line.isEmpty()) continue;
+            if (line.isEmpty()) {
+                continue;
+            }
             String[] args = line.split(" ");
             String cmd = args[0].toLowerCase();
 

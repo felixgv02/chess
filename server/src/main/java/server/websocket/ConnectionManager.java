@@ -18,23 +18,24 @@ public class ConnectionManager {
     }
 
     public void broadcast(int gameID, String message, Session excludeSession) {
-        if (connections.containsKey(gameID)) {
-            var removeList = new ArrayList<Session>();
-            for (Session session : connections.get(gameID)) {
-                if (session.isOpen()) {
-                    if (!session.equals(excludeSession)) {
-                        try {
-                            session.getRemote().sendString(message);
-                        } catch (Exception e) {
-                            removeList.add(session);
-                        }
-                    }
-                } else {
+        if (!connections.containsKey(gameID)) {
+            return;
+        }
+        var removeList = new ArrayList<Session>();
+        for (Session session : connections.get(gameID)) {
+            if (!session.isOpen()) {
+                removeList.add(session);
+                continue;
+            }
+            if (!session.equals(excludeSession)) {
+                try {
+                    session.getRemote().sendString(message);
+                } catch (Exception e) {
                     removeList.add(session);
                 }
             }
-            connections.get(gameID).removeAll(removeList);
         }
+        connections.get(gameID).removeAll(removeList);
     }
 }
 

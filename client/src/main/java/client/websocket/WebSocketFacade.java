@@ -48,7 +48,9 @@ public class WebSocketFacade extends Endpoint{
 
     @Override
     public void onClose(Session session, CloseReason closeReason) {
-        System.out.println(ui.EscapeSequences.SET_TEXT_COLOR_YELLOW + "SYSTEM DISCONNECT: " + closeReason.getCloseCode() + " -> " + closeReason.getReasonPhrase() + ui.EscapeSequences.SET_TEXT_COLOR_WHITE);
+        System.out.println(ui.EscapeSequences.SET_TEXT_COLOR_YELLOW + "SYSTEM DISCONNECT: " + 
+                closeReason.getCloseCode() + " -> " + closeReason.getReasonPhrase() + 
+                ui.EscapeSequences.SET_TEXT_COLOR_WHITE);
     }
 
     public void sendCommand(UserGameCommand command) throws Exception {

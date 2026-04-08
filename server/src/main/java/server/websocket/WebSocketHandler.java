@@ -108,7 +108,9 @@ public class WebSocketHandler {
 
     private void resign(String username, int gameID, Session session) throws Exception {
         GameData gameData = gameService.getGame(gameID);
-        if (gameData == null) return;
+        if (gameData == null) {
+            return;
+        }
 
         boolean isPlayer = Objects.equals(username, gameData.whiteUsername()) || Objects.equals(username, gameData.blackUsername());
 
@@ -144,8 +146,11 @@ public class WebSocketHandler {
         }
 
         String playerColor = null;
-        if (Objects.equals(username, gameData.whiteUsername())) playerColor = "WHITE";
-        else if (Objects.equals(username, gameData.blackUsername())) playerColor = "BLACK";
+        if (Objects.equals(username, gameData.whiteUsername())) {
+            playerColor = "WHITE";
+        } else if (Objects.equals(username, gameData.blackUsername())) {
+            playerColor = "BLACK";
+        }
 
         if (playerColor == null) {
             session.getRemote().sendString(gson.toJson(new ErrorMessage("Error: Observers cannot move pieces")));
