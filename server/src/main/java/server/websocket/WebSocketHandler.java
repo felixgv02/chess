@@ -30,7 +30,7 @@ public class WebSocketHandler {
 
     public void configure(WsConfig ws) {
         ws.onConnect(ctx -> {
-            ctx.session.setIdleTimeout(java.time.Duration.ofMinutes(10));
+            ctx.session.setIdleTimeout(java.time.Duration.ofMinutes(15));
         });
         ws.onClose(ctx -> {
             System.out.println("SERVER WEBSOCKET CLOSED: " + ctx.status() + " -> " + ctx.reason());
@@ -83,7 +83,15 @@ public class WebSocketHandler {
         var loadMsg = new LoadGameMessage(gameData);
         session.getRemote().sendString(gson.toJson(loadMsg));
 
-        var notif = new NotificationMessage(username + " joined the game.");
+        String messageTail;
+        if (Objects.equals(username, gameData.whiteUsername())) {
+            messageTail = " joined the game playing WHITE.";
+        } else if (Objects.equals(username, gameData.blackUsername())) {
+            messageTail = " joined the game playing BLACK.";
+        } else {
+            messageTail = " joined the game as an observer.";
+        }
+        var notif = new NotificationMessage(username + messageTail);
         connections.broadcast(gameID, gson.toJson(notif), session);
     }
 
@@ -186,20 +194,25 @@ public class WebSocketHandler {
         var loadMsg = new LoadGameMessage(gameData);
         connections.broadcast(gameID, gson.toJson(loadMsg), null);
 
-        var notif = new NotificationMessage(username + " made a move.");
+        String startPos = "" + (char) ('a' + cmd.getMove().getStartPosition().getColumn() - 1) + cmd.getMove().getStartPosition().getRow();
+        String endPos = "" + (char) ('a' + cmd.getMove().getEndPosition().getColumn() - 1) + cmd.getMove().getEndPosition().getRow();
+        var notif = new NotificationMessage(username + " moved (" + startPos + " " + endPos + ")");
         connections.broadcast(gameID, gson.toJson(notif), session);
 
         // Send check/checkmate alerts securely across clients
+        String blackName = gameData.blackUsername() != null ? gameData.blackUsername() : "Black";
+        String whiteName = gameData.whiteUsername() != null ? gameData.whiteUsername() : "White";
+
         if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
-            connections.broadcast(gameID, gson.toJson(new NotificationMessage("Black is in checkmate!")), null);
+            connections.broadcast(gameID, gson.toJson(new NotificationMessage(blackName + " is in checkmate!")), null);
         } else if (game.isInCheck(ChessGame.TeamColor.BLACK)) {
-            connections.broadcast(gameID, gson.toJson(new NotificationMessage("Black is in check!")), null);
+            connections.broadcast(gameID, gson.toJson(new NotificationMessage(blackName + " is in check!")), null);
         }
 
         if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
-            connections.broadcast(gameID, gson.toJson(new NotificationMessage("White is in checkmate!")), null);
+            connections.broadcast(gameID, gson.toJson(new NotificationMessage(whiteName + " is in checkmate!")), null);
         } else if (game.isInCheck(ChessGame.TeamColor.WHITE)) {
-            connections.broadcast(gameID, gson.toJson(new NotificationMessage("White is in check!")), null);
+            connections.broadcast(gameID, gson.toJson(new NotificationMessage(whiteName + " is in check!")), null);
         }
 
         if (game.isInStalemate(ChessGame.TeamColor.BLACK) || game.isInStalemate(ChessGame.TeamColor.WHITE)) {
@@ -207,3 +220,7 @@ public class WebSocketHandler {
         }
     }
 }
+
+
+//add move more specific (eg move e7 e6 -> [user] move (e7 e6))
+//correct error message for move 7e 6e(Index 13 out of bounds for length 8)

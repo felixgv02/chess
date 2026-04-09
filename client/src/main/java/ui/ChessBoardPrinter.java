@@ -4,11 +4,17 @@ import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
+import java.util.Collection;
+import chess.ChessMove;
 import static ui.EscapeSequences.*;
 
 public class ChessBoardPrinter {
 
     public static void printBoard(ChessBoard board, boolean whitePerspective) {
+        printBoard(board, whitePerspective, null, null);
+    }
+
+    public static void printBoard(ChessBoard board, boolean whitePerspective, Collection<ChessMove> validMoves, ChessPosition highlightPos) {
         System.out.print(SET_BG_COLOR_DARK_GREY);
         System.out.print(SET_TEXT_COLOR_WHITE);
 
@@ -29,13 +35,34 @@ public class ChessBoardPrinter {
 
             for (int col = startCol; col != endCol + colStep; col += colStep) {
                 boolean isLightSquare = (row + col) % 2 != 0;
-                if (isLightSquare) {
+                ChessPosition currentPos = new ChessPosition(row, col);
+                
+                boolean isHighlightStart = highlightPos != null && highlightPos.equals(currentPos);
+                boolean isHighlightEnd = false;
+                if (validMoves != null) {
+                    for (ChessMove move : validMoves) {
+                        if (move.getEndPosition().equals(currentPos)) {
+                            isHighlightEnd = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (isHighlightStart) {
+                    System.out.print(SET_BG_COLOR_YELLOW);
+                } else if (isHighlightEnd) {
+                    if (isLightSquare) {
+                        System.out.print(SET_BG_COLOR_GREEN);
+                    } else {
+                        System.out.print(SET_BG_COLOR_DARK_GREEN);
+                    }
+                } else if (isLightSquare) {
                     System.out.print(SET_BG_COLOR_LIGHT_GREY);
                 } else {
                     System.out.print(SET_BG_COLOR_BLACK);
                 }
 
-                ChessPiece piece = board.getPiece(new ChessPosition(row, col));
+                ChessPiece piece = board.getPiece(currentPos);
                 printPiece(piece);
             }
 

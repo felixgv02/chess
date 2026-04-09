@@ -58,9 +58,14 @@ public class GameplayMenu implements ServerMessageObserver{
                         ChessBoardPrinter.printBoard(currentGame.getBoard(), !playerColor.equals("BLACK"));
                     }
                 } else if (cmd.equals("move") && args.length == 3) {
-                    char startCol = args[1].charAt(0);
+                    if (args[1].length() != 2 || args[2].length() != 2 || 
+                        !Character.isLetter(args[1].charAt(0)) || !Character.isDigit(args[1].charAt(1)) ||
+                        !Character.isLetter(args[2].charAt(0)) || !Character.isDigit(args[2].charAt(1))) {
+                        throw new Exception("Invalid move format. Please use format <START> <END>, for example: move e2 e4.");
+                    }
+                    char startCol = Character.toLowerCase(args[1].charAt(0));
                     int startRow = Character.getNumericValue(args[1].charAt(1));
-                    char endCol = args[2].charAt(0);
+                    char endCol = Character.toLowerCase(args[2].charAt(0));
                     int endRow = Character.getNumericValue(args[2].charAt(1));
 
                     ChessPosition start = new ChessPosition(startRow, startCol - 'a' + 1);
@@ -69,10 +74,27 @@ public class GameplayMenu implements ServerMessageObserver{
                     ChessMove move = new ChessMove(start, end, null);
 
                     ws.sendCommand(new MakeMoveCommand(repl.getAuth().authToken(), gameID, move));
+                } else if (cmd.equals("highlight") && args.length == 2) {
+                    if (currentGame != null) {
+                        try {
+                            char colChar = args[1].charAt(0);
+                            int rowNum = Character.getNumericValue(args[1].charAt(1));
+                            ChessPosition startPos = new ChessPosition(rowNum, colChar - 'a' + 1);
+                            
+                            var validMoves = currentGame.validMoves(startPos);
+                            System.out.println();
+                            ChessBoardPrinter.printBoard(currentGame.getBoard(), !playerColor.equals("BLACK"), validMoves, startPos);
+                        } catch (Exception e) {
+                            System.out.println(SET_TEXT_COLOR_RED + "Invalid position. Try e.g., 'highlight e2'");
+                        }
+                    } else {
+                        System.out.println(SET_TEXT_COLOR_RED + "Wait for the game to load.");
+                    }
                 } else if (cmd.equals("help")) {
                     System.out.println(SET_TEXT_COLOR_BLUE + "redraw" + SET_TEXT_COLOR_MAGENTA + " - redraws the board");
                     System.out.println(SET_TEXT_COLOR_BLUE + "move <START> <END>" + SET_TEXT_COLOR_MAGENTA + " - make a move (e.g. move e2 e4)");
                     System.out.println(SET_TEXT_COLOR_BLUE + "resign" + SET_TEXT_COLOR_MAGENTA + " - forfeit the game");
+                    System.out.println(SET_TEXT_COLOR_BLUE + "highlight <POSITION>" + SET_TEXT_COLOR_MAGENTA + " - highlight legal moves (e.g. highlight e2)");
                     System.out.println(SET_TEXT_COLOR_BLUE + "leave" + SET_TEXT_COLOR_MAGENTA + " - return to the post-login menu");
                     System.out.println(SET_TEXT_COLOR_BLUE + "help" + SET_TEXT_COLOR_MAGENTA + " - show this menu");
                 } else {
@@ -80,7 +102,6 @@ public class GameplayMenu implements ServerMessageObserver{
                 }
             } catch (Exception e) {
                 System.out.println(SET_TEXT_COLOR_RED + e.getMessage());
-                e.printStackTrace();
             }
         }
     }

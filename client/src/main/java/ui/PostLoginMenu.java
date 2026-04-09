@@ -86,8 +86,8 @@ public class PostLoginMenu {
                         GameData g = cachedGames.get(listId - 1);
                         System.out.println("Observing game: " + g.gameName());
 
-                        // Draw board from White's perspective
-                        ChessBoardPrinter.printBoard(new ChessGame().getBoard(), true);
+                        // Enter the GameplayMenu as an observer
+                        new GameplayMenu(repl, g.gameID(), "OBSERVER").run();
                     } catch (Exception e) {
                         System.out.println(SET_TEXT_COLOR_RED + "Invalid physical game ID. Did you `list` first?");
                     }
